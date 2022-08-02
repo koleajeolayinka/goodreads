@@ -1,24 +1,20 @@
 package com.ehizman.goodreads.utils;
 
-import com.ehizman.goodreads.dtos.AccountCreationRequest;
+import com.ehizman.goodreads.controllers.requestsAndResponses.AccountCreationRequest;
 import com.ehizman.goodreads.exceptions.GoodReadsException;
 import com.ehizman.goodreads.models.User;
 import com.ehizman.goodreads.respositories.UserRepository;
-import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
-@Service
+
+@Slf4j
 public class AccountValidation {
+    public static void validate(AccountCreationRequest accountCreationRequest, UserRepository userRepository) throws GoodReadsException {
+        log.info("In validate Method");
 
-    private static UserRepository userRepository;
-
-    public AccountValidation(UserRepository userRepository) {
-        AccountValidation.userRepository = userRepository;
-    }
-
-    public static void validate(AccountCreationRequest accountCreationRequest) throws GoodReadsException {
         User user = userRepository.findUserByEmail(accountCreationRequest.getEmail()).orElse(null);
         if (user != null){
-            throw new GoodReadsException("user email already exists");
+            throw new GoodReadsException("user email already exists", 400);
         }
     }
 }

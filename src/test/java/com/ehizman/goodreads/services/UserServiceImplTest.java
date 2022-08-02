@@ -1,6 +1,6 @@
 package com.ehizman.goodreads.services;
 
-import com.ehizman.goodreads.dtos.AccountCreationRequest;
+import com.ehizman.goodreads.controllers.requestsAndResponses.AccountCreationRequest;
 import com.ehizman.goodreads.dtos.UserDto;
 import com.ehizman.goodreads.exceptions.GoodReadsException;
 import com.ehizman.goodreads.models.User;
@@ -28,6 +28,7 @@ class UserServiceImplTest {
     }
 
     @Test
+
     void testThatUserCanCreateAccount() throws GoodReadsException {
         AccountCreationRequest accountCreationRequest =
                 new AccountCreationRequest("Firstname", "Lastname", "testemail@gmail.com","password" );
