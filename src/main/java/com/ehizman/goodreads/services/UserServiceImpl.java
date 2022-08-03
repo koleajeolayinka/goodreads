@@ -4,13 +4,13 @@ import com.ehizman.goodreads.controllers.requestsAndResponses.AccountCreationReq
 import com.ehizman.goodreads.controllers.requestsAndResponses.UpdateRequest;
 import com.ehizman.goodreads.dtos.UserDto;
 import com.ehizman.goodreads.exceptions.GoodReadsException;
+import com.ehizman.goodreads.models.MessageRequest;
 import com.ehizman.goodreads.models.User;
 import com.ehizman.goodreads.respositories.UserRepository;
-import com.ehizman.goodreads.utils.ModelMapperConfig;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.Model;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,17 +20,17 @@ import java.util.List;
 public class UserServiceImpl implements UserService{
     private UserRepository userRepository;
     private ModelMapper modelMapper;
+    private EmailService emailService;
 
-    public UserServiceImpl(UserRepository userRepository, ModelMapper mapper) {
+    public UserServiceImpl(UserRepository userRepository, ModelMapper mapper, EmailService emailService) {
         this.userRepository = userRepository;
         this.modelMapper = mapper;
+        this.emailService = emailService;
     }
 
     @Override
-    public UserDto createUserAccount(AccountCreationRequest accountCreationRequest) throws GoodReadsException {
-        log.info("In Create User Account Method");
+    public UserDto createUserAccount(AccountCreationRequest accountCreationRequest) throws GoodReadsException, UnirestException {
         validate(accountCreationRequest, userRepository);
-        log.info("After Validated Method");
         User user = User.builder()
                 .firstName(accountCreationRequest.getFirstName())
                 .lastName(accountCreationRequest.getLastName())
@@ -38,6 +38,15 @@ public class UserServiceImpl implements UserService{
                 .password(accountCreationRequest.getPassword())
                 .dateJoined(LocalDate.now())
                 .build();
+        MessageRequest message = MessageRequest.builder()
+                        .subject("VERIFY EMAIL")
+                        .sender("ehizman.tutoredafrica@gmail.com")
+                        .receiver(user.getEmail())
+                        .body("Please verify your email")
+                        .build();
+
+        emailService.sendSimpleMail(message);
+        log.info("After sending email");
         User savedUser = userRepository.save(user);
         return modelMapper.map(savedUser, UserDto.class);
     }

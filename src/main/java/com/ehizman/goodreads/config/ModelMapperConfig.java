@@ -1,4 +1,4 @@
-package com.ehizman.goodreads.utils;
+package com.ehizman.goodreads.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;

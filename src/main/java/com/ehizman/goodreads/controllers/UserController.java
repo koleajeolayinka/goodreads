@@ -6,6 +6,7 @@ import com.ehizman.goodreads.controllers.requestsAndResponses.UpdateRequest;
 import com.ehizman.goodreads.dtos.UserDto;
 import com.ehizman.goodreads.exceptions.GoodReadsException;
 import com.ehizman.goodreads.services.UserService;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +48,8 @@ public class UserController {
                     .message(e.getMessage())
                     .build();
             return new ResponseEntity<>(apiResponse, HttpStatus.valueOf(e.getStatusCode()));
+        } catch (UnirestException e) {
+            throw new RuntimeException(e);
         }
     }
 

@@ -5,6 +5,7 @@ import com.ehizman.goodreads.dtos.UserDto;
 import com.ehizman.goodreads.exceptions.GoodReadsException;
 import com.ehizman.goodreads.models.User;
 import com.ehizman.goodreads.respositories.UserRepository;
+import com.ehizman.goodreads.services.EmailService;
 import com.ehizman.goodreads.services.UserService;
 import com.ehizman.goodreads.services.UserServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,8 @@ import static org.mockito.Mockito.*;
 public class UserServiceMockTest {
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private EmailService emailService;
     private UserService userService;
 
     @Mock
@@ -37,7 +40,7 @@ public class UserServiceMockTest {
 
     @BeforeEach
     void setUp() {
-        userService = new UserServiceImpl(userRepository, mapper);
+        userService = new UserServiceImpl(userRepository, mapper, emailService);
     }
 
     @Test

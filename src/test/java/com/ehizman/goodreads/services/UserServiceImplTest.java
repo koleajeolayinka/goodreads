@@ -20,6 +20,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserServiceImplTest {
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EmailService emailService;
     @Autowired
     private ModelMapper mapper;
 
@@ -27,7 +30,7 @@ class UserServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        userService = new UserServiceImpl(userRepository, mapper);
+        userService = new UserServiceImpl(userRepository, mapper, emailService);
     }
 
     @Test
