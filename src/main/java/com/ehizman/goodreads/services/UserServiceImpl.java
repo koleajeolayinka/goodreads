@@ -3,33 +3,44 @@ package com.ehizman.goodreads.services;
 import com.ehizman.goodreads.controllers.requestsAndResponses.AccountCreationRequest;
 import com.ehizman.goodreads.controllers.requestsAndResponses.UpdateRequest;
 import com.ehizman.goodreads.dtos.UserDto;
+import com.ehizman.goodreads.events.SendMessageEvent;
 import com.ehizman.goodreads.exceptions.GoodReadsException;
+import com.ehizman.goodreads.models.MailResponse;
 import com.ehizman.goodreads.models.MessageRequest;
 import com.ehizman.goodreads.models.User;
 import com.ehizman.goodreads.respositories.UserRepository;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService{
     private UserRepository userRepository;
+
+    private ApplicationEventPublisher applicationEventPublisher;
     private ModelMapper modelMapper;
     private EmailService emailService;
 
-    public UserServiceImpl(UserRepository userRepository, ModelMapper mapper, EmailService emailService) {
+    public UserServiceImpl(UserRepository userRepository,
+                           ModelMapper mapper,
+                           EmailService emailService,
+                           ApplicationEventPublisher applicationEventPublisher) {
         this.userRepository = userRepository;
         this.modelMapper = mapper;
         this.emailService = emailService;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @Override
-    public UserDto createUserAccount(AccountCreationRequest accountCreationRequest) throws GoodReadsException, UnirestException {
+    public UserDto createUserAccount(AccountCreationRequest accountCreationRequest) throws GoodReadsException, UnirestException, ExecutionException, InterruptedException {
         validate(accountCreationRequest, userRepository);
         User user = User.builder()
                 .firstName(accountCreationRequest.getFirstName())
@@ -44,9 +55,8 @@ public class UserServiceImpl implements UserService{
                         .receiver(user.getEmail())
                         .body("Please verify your email")
                         .build();
-
-        emailService.sendSimpleMail(message);
-        log.info("After sending email");
+        SendMessageEvent event = new SendMessageEvent(message);
+        applicationEventPublisher.publishEvent(event);
         User savedUser = userRepository.save(user);
         return modelMapper.map(savedUser, UserDto.class);
     }

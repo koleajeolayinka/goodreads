@@ -5,13 +5,16 @@ import com.ehizman.goodreads.dtos.UserDto;
 import com.ehizman.goodreads.exceptions.GoodReadsException;
 import com.ehizman.goodreads.models.User;
 import com.ehizman.goodreads.respositories.UserRepository;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,15 +29,18 @@ class UserServiceImplTest {
     @Autowired
     private ModelMapper mapper;
 
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
+
     private UserService userService;
 
     @BeforeEach
     void setUp() {
-        userService = new UserServiceImpl(userRepository, mapper, emailService);
+        userService = new UserServiceImpl(userRepository, mapper, emailService, applicationEventPublisher);
     }
 
     @Test
-    void testThatUserCanCreateAccount() throws GoodReadsException {
+    void testThatUserCanCreateAccount() throws GoodReadsException, UnirestException, ExecutionException, InterruptedException {
         AccountCreationRequest accountCreationRequest =
                 new AccountCreationRequest("Firstname", "Lastname", "testemail@gmail.com","password" );
         UserDto userDto = userService.createUserAccount(accountCreationRequest);
@@ -48,7 +54,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void testThatUserEmailIsUnique() throws GoodReadsException {
+    void testThatUserEmailIsUnique() throws GoodReadsException, UnirestException, ExecutionException, InterruptedException {
         AccountCreationRequest firstAccountCreationRequest =
                 new AccountCreationRequest("Firstname", "Lastname", "testemail@gmail.com","password" );
         UserDto userDto = userService.createUserAccount(firstAccountCreationRequest);

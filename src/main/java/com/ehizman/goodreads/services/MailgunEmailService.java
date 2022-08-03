@@ -1,5 +1,6 @@
 package com.ehizman.goodreads.services;
 
+import com.ehizman.goodreads.models.MailResponse;
 import com.ehizman.goodreads.models.MessageRequest;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletableFuture;
 
-@Service
+@Service("mailgun_sender")
 @NoArgsConstructor
 @Slf4j
 public class MailgunEmailService implements EmailService{
@@ -21,7 +22,7 @@ public class MailgunEmailService implements EmailService{
 
     @Override
     @Async
-    public CompletableFuture<JsonNode> sendSimpleMail(MessageRequest messageRequest) throws UnirestException {
+    public CompletableFuture<MailResponse> sendSimpleMail(MessageRequest messageRequest) throws UnirestException {
         log.info("DOMAIN -> {}", DOMAIN);
         log.info("API KEY -> {}", PRIVATE_KEY);
         HttpResponse<JsonNode> request = Unirest.post("https://api.mailgun.net/v3/" + DOMAIN + "/messages")
@@ -31,8 +32,8 @@ public class MailgunEmailService implements EmailService{
                 .queryString("subject", messageRequest.getSubject())
                 .queryString("text", messageRequest.getBody())
                 .asJson();
-        log.info("Finished sending email");
-        return CompletableFuture.completedFuture(request.getBody());
+        MailResponse mailResponse = request.getStatus() == 200 ? new MailResponse(true) : new MailResponse(false);
+        return CompletableFuture.completedFuture(mailResponse);
     }
 
     @Override

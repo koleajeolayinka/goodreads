@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @Slf4j
@@ -48,8 +50,12 @@ public class UserController {
                     .message(e.getMessage())
                     .build();
             return new ResponseEntity<>(apiResponse, HttpStatus.valueOf(e.getStatusCode()));
-        } catch (UnirestException e) {
-            throw new RuntimeException(e);
+        } catch (UnirestException | ExecutionException | InterruptedException e){
+            ApiResponse apiResponse = ApiResponse.builder()
+                    .status("fail")
+                    .message(e.getMessage())
+                    .build();
+            return new ResponseEntity<>(apiResponse, HttpStatus.valueOf(400));
         }
     }
 
