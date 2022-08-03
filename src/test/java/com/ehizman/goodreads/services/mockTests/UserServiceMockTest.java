@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 
 import java.util.Optional;
 
@@ -28,12 +29,15 @@ public class UserServiceMockTest {
     private UserRepository userRepository;
     private UserService userService;
 
+    @Mock
+    private ModelMapper mapper;
+
 //    @Captor
 //    private ArgumentCaptor<User> userArgumentCaptor;
 
     @BeforeEach
     void setUp() {
-        userService = new UserServiceImpl(userRepository);
+        userService = new UserServiceImpl(userRepository, mapper);
     }
 
     @Test
@@ -48,8 +52,15 @@ public class UserServiceMockTest {
                 .email(accountCreationRequest.getEmail())
                 .password(accountCreationRequest.getPassword())
                 .build();
+        UserDto userDtoToReturn = UserDto.builder()
+                .id(1L)
+                .firstName(accountCreationRequest.getFirstName())
+                .lastName(accountCreationRequest.getLastName())
+                .email(accountCreationRequest.getEmail())
+                .build();
         when(userRepository.findUserByEmail("testemail@gmail.com")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenReturn(userToReturn);
+        when(mapper.map(userToReturn, UserDto.class)).thenReturn(userDtoToReturn);
         UserDto userDto = userService.createUserAccount(accountCreationRequest);
         verify(userRepository, times(1)).findUserByEmail("testemail@gmail.com");
 //        verify(userRepository, times(1)).save(userArgumentCaptor.capture());
@@ -106,7 +117,15 @@ public class UserServiceMockTest {
                         .email("amyAzu@gmail.com")
                         .password("Amaka_2005")
                         .build();
+
+        UserDto userDtoToReturn = UserDto.builder()
+                .id(1L)
+                .firstName("Amaka")
+                .lastName("Azubuike")
+                .email("amyAzu@gmail.com")
+                .build();
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(mapper.map(user, UserDto.class)).thenReturn(userDtoToReturn);
 
         UserDto userDto = userService.findUserById(userId);
         verify(userRepository, times(1)).findById(1L);

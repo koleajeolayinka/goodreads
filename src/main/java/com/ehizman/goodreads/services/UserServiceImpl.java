@@ -6,11 +6,13 @@ import com.ehizman.goodreads.dtos.UserDto;
 import com.ehizman.goodreads.exceptions.GoodReadsException;
 import com.ehizman.goodreads.models.User;
 import com.ehizman.goodreads.respositories.UserRepository;
-import com.ehizman.goodreads.utils.AccountValidation;
+import com.ehizman.goodreads.utils.ModelMapperConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -19,21 +21,22 @@ public class UserServiceImpl implements UserService{
     private UserRepository userRepository;
     private ModelMapper modelMapper;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, ModelMapper mapper) {
         this.userRepository = userRepository;
-        modelMapper = new ModelMapper();
+        this.modelMapper = mapper;
     }
 
     @Override
     public UserDto createUserAccount(AccountCreationRequest accountCreationRequest) throws GoodReadsException {
         log.info("In Create User Account Method");
-        AccountValidation.validate(accountCreationRequest, userRepository);
+        validate(accountCreationRequest, userRepository);
         log.info("After Validated Method");
         User user = User.builder()
                 .firstName(accountCreationRequest.getFirstName())
                 .lastName(accountCreationRequest.getLastName())
                 .email(accountCreationRequest.getEmail())
                 .password(accountCreationRequest.getPassword())
+                .dateJoined(LocalDate.now())
                 .build();
         User savedUser = userRepository.save(user);
         return modelMapper.map(savedUser, UserDto.class);
@@ -60,7 +63,16 @@ public class UserServiceImpl implements UserService{
         );
         User userToSave = modelMapper.map(updateRequest,User.class);
         userToSave.setId(user.getId());
+        userToSave.setDateJoined(user.getDateJoined());
         userRepository.save(userToSave);
         return modelMapper.map(userToSave, UserDto.class);
+    }
+
+    private static void validate(AccountCreationRequest accountCreationRequest, UserRepository userRepository) throws GoodReadsException {
+
+        User user = userRepository.findUserByEmail(accountCreationRequest.getEmail()).orElse(null);
+        if (user != null){
+            throw new GoodReadsException("user email already exists", 400);
+        }
     }
 }

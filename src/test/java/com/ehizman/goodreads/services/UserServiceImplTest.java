@@ -7,6 +7,7 @@ import com.ehizman.goodreads.models.User;
 import com.ehizman.goodreads.respositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -19,16 +20,17 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserServiceImplTest {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ModelMapper mapper;
 
     private UserService userService;
 
     @BeforeEach
     void setUp() {
-        userService = new UserServiceImpl(userRepository);
+        userService = new UserServiceImpl(userRepository, mapper);
     }
 
     @Test
-
     void testThatUserCanCreateAccount() throws GoodReadsException {
         AccountCreationRequest accountCreationRequest =
                 new AccountCreationRequest("Firstname", "Lastname", "testemail@gmail.com","password" );
