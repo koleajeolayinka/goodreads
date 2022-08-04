@@ -17,4 +17,6 @@ public class MessageRequest {
     private String receiver;
     private String body;
     private String subject;
+    private String usersFullName;
+
 }

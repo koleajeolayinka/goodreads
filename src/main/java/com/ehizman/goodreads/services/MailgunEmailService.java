@@ -30,7 +30,7 @@ public class MailgunEmailService implements EmailService{
                 .queryString("from", messageRequest.getSender())
                 .queryString("to", messageRequest.getReceiver())
                 .queryString("subject", messageRequest.getSubject())
-                .queryString("text", messageRequest.getBody())
+                .queryString("html", messageRequest.getBody())
                 .asJson();
         MailResponse mailResponse = request.getStatus() == 200 ? new MailResponse(true) : new MailResponse(false);
         return CompletableFuture.completedFuture(mailResponse);

@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.util.concurrent.ExecutionException;
 
@@ -15,10 +17,17 @@ import java.util.concurrent.ExecutionException;
 public class SendMessageEventListener {
     @Qualifier("mailgun_sender")
     @Autowired
-    EmailService emailService;
+    private EmailService emailService;
+    @Autowired
+    private TemplateEngine templateEngine;
 
     @EventListener
     public void handleSendMessageEvent(SendMessageEvent event) throws UnirestException, ExecutionException, InterruptedException {
+        MessageRequest messageRequest = (MessageRequest) event.getSource();
+        Context context = new Context();
+        context.setVariable("user_name", messageRequest.getUsersFullName());
+        context.setVariable("verification_token", "https://www.google.com");
+        messageRequest.setBody(templateEngine.process("registration_verification_mail.html", context));
         MailResponse mailResponse = emailService.sendSimpleMail((MessageRequest) event.getSource()).get();
     }
 }

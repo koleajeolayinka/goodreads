@@ -53,7 +53,7 @@ public class UserServiceImpl implements UserService{
                         .subject("VERIFY EMAIL")
                         .sender("ehizman.tutoredafrica@gmail.com")
                         .receiver(user.getEmail())
-                        .body("Please verify your email")
+                        .usersFullName(String.format("%s %s", user.getFirstName(), user.getLastName()))
                         .build();
         SendMessageEvent event = new SendMessageEvent(message);
         applicationEventPublisher.publishEvent(event);
