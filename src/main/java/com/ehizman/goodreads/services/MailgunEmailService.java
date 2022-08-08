@@ -22,7 +22,7 @@ public class MailgunEmailService implements EmailService{
 
     @Override
     @Async
-    public CompletableFuture<MailResponse> sendSimpleMail(MessageRequest messageRequest) throws UnirestException {
+    public CompletableFuture<MailResponse> sendHtmlMail(MessageRequest messageRequest) throws UnirestException {
         log.info("DOMAIN -> {}", DOMAIN);
         log.info("API KEY -> {}", PRIVATE_KEY);
         HttpResponse<JsonNode> request = Unirest.post("https://api.mailgun.net/v3/" + DOMAIN + "/messages")
@@ -37,6 +37,17 @@ public class MailgunEmailService implements EmailService{
     }
 
     @Override
-    public void sendHtmlMail(MessageRequest messageRequest) {
+    public CompletableFuture<MailResponse> sendSimpleMail(MessageRequest messageRequest) throws UnirestException {
+        log.info("DOMAIN -> {}", DOMAIN);
+        log.info("API KEY -> {}", PRIVATE_KEY);
+        HttpResponse<JsonNode> request = Unirest.post("https://api.mailgun.net/v3/" + DOMAIN + "/messages")
+                .basicAuth("api", PRIVATE_KEY)
+                .queryString("from", messageRequest.getSender())
+                .queryString("to", messageRequest.getReceiver())
+                .queryString("subject", messageRequest.getSubject())
+                .queryString("text", messageRequest.getBody())
+                .asJson();
+        MailResponse mailResponse = request.getStatus() == 200 ? new MailResponse(true) : new MailResponse(false);
+        return CompletableFuture.completedFuture(mailResponse);
     }
 }
