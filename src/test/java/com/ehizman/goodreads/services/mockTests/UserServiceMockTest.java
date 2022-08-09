@@ -8,6 +8,7 @@ import com.ehizman.goodreads.respositories.UserRepository;
 import com.ehizman.goodreads.services.EmailService;
 import com.ehizman.goodreads.services.UserService;
 import com.ehizman.goodreads.services.UserServiceImpl;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,8 +16,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -31,6 +34,8 @@ public class UserServiceMockTest {
     @Mock
     private EmailService emailService;
     private UserService userService;
+    @Mock
+    ApplicationEventPublisher applicationEventPublisher;
 
     @Mock
     private ModelMapper mapper;
@@ -40,11 +45,11 @@ public class UserServiceMockTest {
 
     @BeforeEach
     void setUp() {
-        userService = new UserServiceImpl(userRepository, mapper, emailService);
+        userService = new UserServiceImpl(userRepository, mapper, emailService, applicationEventPublisher);
     }
 
     @Test
-    void testThatUserCanCreateAccount() throws GoodReadsException {
+    void testThatUserCanCreateAccount() throws GoodReadsException, UnirestException, ExecutionException, InterruptedException {
         AccountCreationRequest accountCreationRequest =
                 new AccountCreationRequest("Firstname", "Lastname", "testemail@gmail.com","password" );
 
@@ -82,7 +87,7 @@ public class UserServiceMockTest {
     }
 
     @Test
-    void testThatUserEmailIsUnique() throws GoodReadsException {
+    void testThatUserEmailIsUnique() throws GoodReadsException, UnirestException, ExecutionException, InterruptedException {
         AccountCreationRequest accountCreationRequest =
                 new AccountCreationRequest("Firstname", "Lastname", "testemail@gmail.com","password" );
 

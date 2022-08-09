@@ -37,6 +37,7 @@ public class MailgunEmailService implements EmailService{
     }
 
     @Override
+    @Async
     public CompletableFuture<MailResponse> sendSimpleMail(MessageRequest messageRequest) throws UnirestException {
         log.info("DOMAIN -> {}", DOMAIN);
         log.info("API KEY -> {}", PRIVATE_KEY);
